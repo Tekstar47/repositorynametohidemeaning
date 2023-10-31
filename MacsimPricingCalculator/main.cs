@@ -888,12 +888,12 @@ namespace MacsimPricingCalculator
 
         public static string GenerateCSVHeader()
         {
-            return "CustomerID, BCode, PBook, ProductID, ProductGroup, Barcode, Price, Qty, Price2, Qty2, Price3, Qty3, Price4, Qty4, Price5, Qty5, Price6, Qty6, Price7, Qty7, Price8, Qty8, Price9, Qty9, Price10, Qty10\n";
+            return "CustomerID, ProductID, Price, Qty, Price2, Qty2, Price3, Qty3, Price4, Qty4, Price5, Qty5, Price6, Qty6, Price7, Qty7, Price8, Qty8, Price9, Qty9, Price10, Qty10\n";
         }
 
         public override string ExportToCSVRow()
         {
-            return $"{CustomerID}, {BCode}, {PBook}, {ProductID}, {ProductGroup}, {Barcode}, {Price}, {Qty}, {Price2}, {Qty2}, {Price3}, {Qty3}, {Price4}, {Qty4}, {Price5}, {Qty5}, {Price6}, {Qty6}, {Price7}, {Qty7}, {Price8}, {Qty8}, {Price9}, {Qty9}, {Price10}, {Qty10}\n";
+            return $"{CustomerID}, {ProductID}, {Price}, {Qty}, {Price2}, {Qty2}, {Price3}, {Qty3}, {Price4}, {Qty4}, {Price5}, {Qty5}, {Price6}, {Qty6}, {Price7}, {Qty7}, {Price8}, {Qty8}, {Price9}, {Qty9}, {Price10}, {Qty10}\n";
         }
     }
 
