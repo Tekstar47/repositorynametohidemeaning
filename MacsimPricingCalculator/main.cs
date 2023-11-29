@@ -78,35 +78,18 @@ namespace MacsimPricingCalculator
 
                 Console.WriteLine("Generating Pricings");
 
-
                 List<CustomerProductPricingBase> customerProductPricings = new();
 
                 //List<CustomerProductPricing> customerProductPricings = new();
                 //List<CustomerProductPricingFullInformation> customerProductPricingsFullInformation = new();
 
-
                 foreach (var product in products)
                 {
-                    var pricing1 = pricingsGeneral.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
-                    var pricing2 = pricingsGeneral.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
-
-                    var pricing3 = pricingsGeneral.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
-                    var pricing4 = pricingsGeneral.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
-
-
-                    var pricing5 = pricingCustomerType.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
-                    var pricing6 = pricingCustomerType.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
-
-                    var pricing7 = pricingCustomerType.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
-                    var pricing8 = pricingCustomerType.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
-
-
-                    var pricing9 = pricingCustomerSpecific.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
-                    var pricing10 = pricingCustomerSpecific.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
-
-                    var pricing11 = pricingCustomerSpecific.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
-                    var pricing12 = pricingCustomerSpecific.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
-
+                    // If Barcode is null, the item is discontinued
+                    if (!debug && product.BarCode == null)
+                    {
+                        continue;
+                    }
 
                     Decimal BasePrice;
 
@@ -140,6 +123,32 @@ namespace MacsimPricingCalculator
                         default:
                             throw new Exception("Invalid PBook value");
                     }
+
+                    // Any item with a base price of 0 is a discontinued item and can be ignored
+                    if (!debug && BasePrice == 0)
+                    {
+                        continue;
+                    }
+
+                    var pricing1 = pricingsGeneral.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
+                    var pricing2 = pricingsGeneral.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
+
+                    var pricing3 = pricingsGeneral.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
+                    var pricing4 = pricingsGeneral.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
+
+
+                    var pricing5 = pricingCustomerType.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
+                    var pricing6 = pricingCustomerType.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
+
+                    var pricing7 = pricingCustomerType.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
+                    var pricing8 = pricingCustomerType.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
+
+
+                    var pricing9 = pricingCustomerSpecific.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
+                    var pricing10 = pricingCustomerSpecific.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
+
+                    var pricing11 = pricingCustomerSpecific.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
+                    var pricing12 = pricingCustomerSpecific.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
 
 
                     if (debug)
@@ -199,31 +208,31 @@ namespace MacsimPricingCalculator
 
                             if (pricing3?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price3 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(3 - pricing3[0].Rate / 300)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                                customerProductPricingFullInformation.Price3 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing3[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks3 = pricing3.Count;
                             }
 
                             if (pricing5?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price5 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(5 - pricing5[0].Rate / 500)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                                customerProductPricingFullInformation.Price5 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing5[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks5 = pricing5.Count;
                             }
 
                             if (pricing7?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price7 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(7 - pricing7[0].Rate / 700)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                                customerProductPricingFullInformation.Price7 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing7[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks7 = pricing7.Count;
                             }
 
                             if (pricing9?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price9 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(9 - pricing9[0].Rate / 900)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                                customerProductPricingFullInformation.Price9 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing9[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks9 = pricing9.Count;
                             }
 
                             if (pricing11?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price11 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(11 - pricing11[0].Rate / 1100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                                customerProductPricingFullInformation.Price11 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing11[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks11 = pricing11.Count;
                             }
                         }
@@ -244,6 +253,14 @@ namespace MacsimPricingCalculator
 
                     // Otherwise filter to just the highest priority customer price
                     // Check from pricing 12 all the way down
+
+                    // Jeremy 2023/11/16 After the price files were reviewed, it seems that pricing 8 should override both pricing 9 and pricing 12. I have placed pricing 8 as the highest priority for now. Will try to get clarification on the pricing priority order.
+
+                    if (pricing8.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing8, BasePrice));
+                        continue;
+                    }
 
                     if (pricing12.Count > 0)
                     {
@@ -266,12 +283,6 @@ namespace MacsimPricingCalculator
                     if (pricing9.Count > 0)
                     {
                         customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing9, BasePrice));
-                        continue;
-                    }
-
-                    if (pricing8.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing8, BasePrice));
                         continue;
                     }
 
@@ -323,6 +334,8 @@ namespace MacsimPricingCalculator
                     csv += customerProductPricing.ExportToCSVRow();
                 }
             }
+
+
 
 
             //File.WriteAllText("../../../output.csv", csv);
@@ -888,12 +901,26 @@ namespace MacsimPricingCalculator
 
         public static string GenerateCSVHeader()
         {
+            return GenerateFullCSVHeader();
+
             return "CustomerID, ProductID, Price, Qty, Price2, Qty2, Price3, Qty3, Price4, Qty4, Price5, Qty5, Price6, Qty6, Price7, Qty7, Price8, Qty8, Price9, Qty9, Price10, Qty10\n";
+        }
+
+        public static string GenerateFullCSVHeader()
+        {
+            return "CustomerID, BCode, PBook, ProductID, ProductGroup, Barcode, Price, Qty, Price2, Qty2, Price3, Qty3, Price4, Qty4, Price5, Qty5, Price6, Qty6, Price7, Qty7, Price8, Qty8, Price9, Qty9, Price10, Qty10\n";
         }
 
         public override string ExportToCSVRow()
         {
+            return ExportToCSVRowFull();
+
             return $"{CustomerID}, {ProductID}, {Price}, {Qty}, {Price2}, {Qty2}, {Price3}, {Qty3}, {Price4}, {Qty4}, {Price5}, {Qty5}, {Price6}, {Qty6}, {Price7}, {Qty7}, {Price8}, {Qty8}, {Price9}, {Qty9}, {Price10}, {Qty10}\n";
+        }
+
+        public string ExportToCSVRowFull()
+        {
+            return $"{CustomerID}, {BCode}, {PBook}, {ProductID}, {ProductGroup}, {Barcode}, {Price}, {Qty}, {Price2}, {Qty2}, {Price3}, {Qty3}, {Price4}, {Qty4}, {Price5}, {Qty5}, {Price6}, {Qty6}, {Price7}, {Qty7}, {Price8}, {Qty8}, {Price9}, {Qty9}, {Price10}, {Qty10}\n";
         }
     }
 
@@ -907,7 +934,7 @@ namespace MacsimPricingCalculator
                                                       Password=pr1mar1u$;";
         public const int TYPE_OVERRIDE = 1;
         public const int TYPE_DISCOUNT = 2;
-        public const int SOLUTION_NUM_DECIMAL_PLACES = 3;
+        public const int SOLUTION_NUM_DECIMAL_PLACES = 4;
     }
 
 }
