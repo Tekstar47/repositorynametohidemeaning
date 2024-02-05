@@ -91,6 +91,20 @@ namespace MacsimPricingCalculator
                         continue;
                     }
 
+                    // If a stock category starts with ZZ, then the product is DELETED/CANCELLED - Steve Hermosilla from Macsim 2023/12/05 in email chain
+                    if (!debug && product.PCode.StartsWith("ZZ")) {
+                        continue;
+                    }
+
+                    int x = 0;
+                    Int32.TryParse(product.Group, out x);
+
+                    //// If Product Group is a two digit number, it is a Eclipse item and we won't be including it
+                    //if (!debug && !Int32.TryParse(product.Group, out x))
+                    //{
+                    //    continue;
+                    //}
+
                     Decimal BasePrice;
 
                     // Set base price
@@ -163,37 +177,37 @@ namespace MacsimPricingCalculator
                         {
                             if (pricing2?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price2 = (decimal)pricing2[0].Rate;
+                                customerProductPricingFullInformation.Price2 = Math.Round((decimal)pricing2[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks2 = pricing2.Count;
                             }
 
                             if (pricing4?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price4 = (decimal)pricing4[0].Rate;
+                                customerProductPricingFullInformation.Price4 = Math.Round((decimal)pricing4[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks4 = pricing4.Count;
                             }
 
                             if (pricing6?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price6 = (decimal)pricing6[0].Rate;
+                                customerProductPricingFullInformation.Price6 = Math.Round((decimal)pricing6[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks6 = pricing6.Count;
                             }
 
                             if (pricing8?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price8 = (decimal)pricing8[0].Rate;
+                                customerProductPricingFullInformation.Price8 = Math.Round((decimal)pricing8[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks8 = pricing8.Count;
                             }
 
                             if (pricing10?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price10 = (decimal)pricing10[0].Rate;
+                                customerProductPricingFullInformation.Price10 = Math.Round((decimal)pricing10[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks10 = pricing10.Count;
                             }
 
                             if (pricing12?.Count > 0)
                             {
-                                customerProductPricingFullInformation.Price12 = (decimal)pricing12[0].Rate;
+                                customerProductPricingFullInformation.Price12 = Math.Round((decimal)pricing12[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
                                 customerProductPricingFullInformation.QtyBreaks12 = pricing12.Count;
                             }
                         }
@@ -256,12 +270,6 @@ namespace MacsimPricingCalculator
 
                     // Jeremy 2023/11/16 After the price files were reviewed, it seems that pricing 8 should override both pricing 9 and pricing 12. I have placed pricing 8 as the highest priority for now. Will try to get clarification on the pricing priority order.
 
-                    if (pricing8.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing8, BasePrice));
-                        continue;
-                    }
-
                     if (pricing12.Count > 0)
                     {
                         customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing12, BasePrice));
@@ -283,6 +291,12 @@ namespace MacsimPricingCalculator
                     if (pricing9.Count > 0)
                     {
                         customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing9, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing8.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing8, BasePrice));
                         continue;
                     }
 
@@ -337,7 +351,6 @@ namespace MacsimPricingCalculator
 
 
 
-
             //File.WriteAllText("../../../output.csv", csv);
             Console.WriteLine("Finished Generating Pricing Data");
 
@@ -346,6 +359,7 @@ namespace MacsimPricingCalculator
             byte[] filebytes = Encoding.UTF8.GetBytes(csv);
             return new FileContentResult(filebytes, "application/octet-stream") { FileDownloadName = "Output.csv" };
         }
+
     }
 
 
@@ -415,16 +429,17 @@ namespace MacsimPricingCalculator
             const int INDEX_SELL7 = 8;
             const int INDEX_SELL8 = 9;
             const int INDEX_BARCODE = 10;
+            const int INDEX_COST = 11;
 
 
             string commandText;
             if (productID == null)
             {
-                commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE]
+                commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST]
                                      FROM [stage].[Macsim_Opmetrix_Products]";
             } else
             {
-                commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE]
+                commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST]
                                     FROM [stage].[Macsim_Opmetrix_Products]
                                     WHERE [PCODE] = '{productID}'";
             }
@@ -453,8 +468,10 @@ namespace MacsimPricingCalculator
                 double sell6 = reader.IsDBNull(INDEX_SELL6) ? 0 : reader.GetDouble(INDEX_SELL6);
                 double sell7 = reader.IsDBNull(INDEX_SELL7) ? 0 : reader.GetDouble(INDEX_SELL7);
                 double sell8 = reader.IsDBNull(INDEX_SELL8) ? 0 : reader.GetDouble(INDEX_SELL8);
+                double? cost = reader.IsDBNull(INDEX_COST) ? null : reader.GetDouble(INDEX_COST);
 
-                products.Add(new(pcode, group, barcode, sell1, sell2, sell3, sell4, sell5, sell6, sell7, sell8));
+
+                products.Add(new(pcode, group, barcode, sell1, sell2, sell3, sell4, sell5, sell6, sell7, sell8, cost));
             }
             reader.Close();
             command.Dispose();
@@ -616,8 +633,9 @@ namespace MacsimPricingCalculator
         public double Sell6 { get; set; }
         public double Sell7 { get; set; }
         public double Sell8 { get; set; }
+        public double? Cost { get; set; } // Not really important but including for debug reasons
 
-        public Product(string pcode, string group, string barcode, double sell1, double sell2, double sell3, double sell4, double sell5, double sell6, double sell7, double sell8)
+        public Product(string pcode, string group, string barcode, double sell1, double sell2, double sell3, double sell4, double sell5, double sell6, double sell7, double sell8, double? cost = null)
         {
             PCode = pcode;
             Group = group;
@@ -630,6 +648,7 @@ namespace MacsimPricingCalculator
             Sell6 = sell6;
             Sell7 = sell7;
             Sell8 = sell8;
+            Cost = cost;
         }
     }
 
@@ -723,12 +742,12 @@ namespace MacsimPricingCalculator
 
         public static string GenerateCSVHeader()
         {
-            return "CustomerID, BCode, PBook, ProductID, ProductGroup, Barcode, Sell1, Sell2, Sell3, Sell4, Sell5, Sell6, Sell7, Sell8, PriceBase, Price1, Qty1, Price2, Qty2, Price3, Qty3, Price4, Qty4, Price5, Qty5, Price6, Qty6, Price7, Qty7, Price8, Qty8, Price9, Qty9, Price10, Qty10, Price11, Qty11, Price12, Qty12\n";
+            return "CustomerID, BCode, PBook, ProductID, ProductGroup, Barcode, Sell1, Sell2, Sell3, Sell4, Sell5, Sell6, Sell7, Sell8, Cost, PriceBase, Price1, Qty1, Price2, Qty2, Price3, Qty3, Price4, Qty4, Price5, Qty5, Price6, Qty6, Price7, Qty7, Price8, Qty8, Price9, Qty9, Price10, Qty10, Price11, Qty11, Price12, Qty12\n";
         }
 
         public override string ExportToCSVRow()
         {
-            return $"{CustomerID}, {BCode}, {PBook}, {ProductID}, {ProductGroup}, {Barcode}, {_Product.Sell1}, {_Product.Sell2}, {_Product.Sell3}, {_Product.Sell4}, {_Product.Sell5}, {_Product.Sell6}, {_Product.Sell7}, {_Product.Sell8}, {PriceBase}, {Price1}, {QtyBreaks1}, {Price2}, {QtyBreaks2}, {Price3}, {QtyBreaks3}, {Price4}, {QtyBreaks4}, {Price5}, {QtyBreaks5}, {Price6}, {QtyBreaks6}, {Price7}, {QtyBreaks7}, {Price8}, {QtyBreaks8}, {Price9}, {QtyBreaks9}, {Price10}, {QtyBreaks10}, {Price11}, {QtyBreaks11}, {Price12}, {QtyBreaks12}\n";
+            return $"{CustomerID}, {BCode}, {PBook}, {ProductID}, {ProductGroup}, {Barcode}, {_Product.Sell1}, {_Product.Sell2}, {_Product.Sell3}, {_Product.Sell4}, {_Product.Sell5}, {_Product.Sell6}, {_Product.Sell7}, {_Product.Sell8}, {_Product.Cost}, {PriceBase}, {Price1}, {QtyBreaks1}, {Price2}, {QtyBreaks2}, {Price3}, {QtyBreaks3}, {Price4}, {QtyBreaks4}, {Price5}, {QtyBreaks5}, {Price6}, {QtyBreaks6}, {Price7}, {QtyBreaks7}, {Price8}, {QtyBreaks8}, {Price9}, {QtyBreaks9}, {Price10}, {QtyBreaks10}, {Price11}, {QtyBreaks11}, {Price12}, {QtyBreaks12}\n";
         }
     }
 
@@ -902,8 +921,6 @@ namespace MacsimPricingCalculator
         public static string GenerateCSVHeader()
         {
             return GenerateFullCSVHeader();
-
-            return "CustomerID, ProductID, Price, Qty, Price2, Qty2, Price3, Qty3, Price4, Qty4, Price5, Qty5, Price6, Qty6, Price7, Qty7, Price8, Qty8, Price9, Qty9, Price10, Qty10\n";
         }
 
         public static string GenerateFullCSVHeader()
@@ -914,8 +931,6 @@ namespace MacsimPricingCalculator
         public override string ExportToCSVRow()
         {
             return ExportToCSVRowFull();
-
-            return $"{CustomerID}, {ProductID}, {Price}, {Qty}, {Price2}, {Qty2}, {Price3}, {Qty3}, {Price4}, {Qty4}, {Price5}, {Qty5}, {Price6}, {Qty6}, {Price7}, {Qty7}, {Price8}, {Qty8}, {Price9}, {Qty9}, {Price10}, {Qty10}\n";
         }
 
         public string ExportToCSVRowFull()
@@ -934,7 +949,7 @@ namespace MacsimPricingCalculator
                                                       Password=pr1mar1u$;";
         public const int TYPE_OVERRIDE = 1;
         public const int TYPE_DISCOUNT = 2;
-        public const int SOLUTION_NUM_DECIMAL_PLACES = 4;
+        public const int SOLUTION_NUM_DECIMAL_PLACES = 2;
     }
 
 }
