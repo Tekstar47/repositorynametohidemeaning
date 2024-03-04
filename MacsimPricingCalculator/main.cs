@@ -92,7 +92,8 @@ namespace MacsimPricingCalculator
                     }
 
                     // If a stock category starts with ZZ, then the product is DELETED/CANCELLED - Steve Hermosilla from Macsim 2023/12/05 in email chain
-                    if (!debug && product.PCode.StartsWith("ZZ")) {
+                    if (!debug && product.PCode.StartsWith("ZZ"))
+                    {
                         continue;
                     }
 
@@ -270,76 +271,79 @@ namespace MacsimPricingCalculator
 
                     // Jeremy 2023/11/16 After the price files were reviewed, it seems that pricing 8 should override both pricing 9 and pricing 12. I have placed pricing 8 as the highest priority for now. Will try to get clarification on the pricing priority order.
 
-                    if (pricing12.Count > 0)
                     {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing12, BasePrice));
-                        continue;
-                    }
 
-                    if (pricing11.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing11, BasePrice));
-                        continue;
-                    }
+                        if (pricing12.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing12, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing10.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing10, BasePrice));
-                        continue;
-                    }
+                        if (pricing11.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing11, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing9.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing9, BasePrice));
-                        continue;
-                    }
+                        if (pricing10.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing10, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing8.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing8, BasePrice));
-                        continue;
-                    }
+                        if (pricing9.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing9, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing7.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing7, BasePrice));
-                        continue;
-                    }
+                        if (pricing8.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing8, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing6.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing6, BasePrice));
-                        continue;
-                    }
+                        if (pricing7.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing7, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing5.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing5, BasePrice));
-                        continue;
-                    }
+                        if (pricing6.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing6, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing4.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing4, BasePrice));
-                        continue;
-                    }
+                        if (pricing5.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing5, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing3.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing3, BasePrice));
-                        continue;
-                    }
+                        if (pricing4.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing4, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing2.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing2, BasePrice));
-                        continue;
-                    }
+                        if (pricing3.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing3, BasePrice));
+                            continue;
+                        }
 
-                    if (pricing1.Count > 0)
-                    {
-                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing1, BasePrice));
-                        continue;
+                        if (pricing2.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing2, BasePrice));
+                            continue;
+                        }
+
+                        if (pricing1.Count > 0)
+                        {
+                            customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing1, BasePrice));
+                            continue;
+                        }
                     }
                 }
 
@@ -380,7 +384,8 @@ namespace MacsimPricingCalculator
             {
                 commandText = $@"SELECT [ID], [PBOOK], [BCODE]
                                      FROM [stage].[Macsim_Opmetrix_Customers]";
-            } else
+            }
+            else
             {
                 commandText = $@"SELECT [ID], [PBOOK], [BCODE]
                                      FROM [stage].[Macsim_Opmetrix_Customers]
@@ -437,7 +442,8 @@ namespace MacsimPricingCalculator
             {
                 commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST]
                                      FROM [stage].[Macsim_Opmetrix_Products]";
-            } else
+            }
+            else
             {
                 commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST]
                                     FROM [stage].[Macsim_Opmetrix_Products]
@@ -496,7 +502,8 @@ namespace MacsimPricingCalculator
                 commandText = $@"SELECT [stock], [account], [rate], [type], [quantity]
                                     FROM [stage].[Macsim_Opmetrix_ContractPricing]
                                     WHERE [stock] = '{stock}' AND [account] is null";
-            } else
+            }
+            else
             {
                 commandText = $@"SELECT [stock], [account], [rate], [type], [quantity]
                                     FROM [stage].[Macsim_Opmetrix_ContractPricing]
@@ -551,7 +558,8 @@ namespace MacsimPricingCalculator
                 commandText = $@"SELECT [stock], [account], [rate], [type], [quantity]
                                     FROM [stage].[Macsim_Opmetrix_ContractPricing]
                                     WHERE [account] IS null";
-            } else
+            }
+            else
             {
                 commandText = $@"SELECT [stock], [account], [rate], [type], [quantity]
                                     FROM [stage].[Macsim_Opmetrix_ContractPricing]
@@ -793,128 +801,128 @@ namespace MacsimPricingCalculator
                 throw new Exception("Too many qty breakpoints - the limit is 10");
             }
 
-            switch(pricings[0].Type)
+            switch (pricings[0].Type)
             {
                 case Globals.TYPE_OVERRIDE:
-                {
-                    if (pricings.Count > 0)
                     {
-                        Price = (decimal)pricings[0].Rate;
-                        Qty = pricings[0].Qty;
-                    }
+                        if (pricings.Count > 0)
+                        {
+                            Price = (decimal)pricings[0].Rate;
+                            Qty = pricings[0].Qty;
+                        }
 
-                    if (pricings.Count > 1)
-                    {
-                        Price2 = (decimal)pricings[1].Rate;
-                        Qty2 = pricings[1].Qty;
-                    }
+                        if (pricings.Count > 1)
+                        {
+                            Price2 = (decimal)pricings[1].Rate;
+                            Qty2 = pricings[1].Qty;
+                        }
 
-                    if (pricings.Count > 2)
-                    {
-                        Price3 = (decimal)pricings[2].Rate;
-                        Qty3 = pricings[2].Qty;
-                    }
+                        if (pricings.Count > 2)
+                        {
+                            Price3 = (decimal)pricings[2].Rate;
+                            Qty3 = pricings[2].Qty;
+                        }
 
-                    if (pricings.Count > 3)
-                    {
-                        Price4 = (decimal)pricings[3].Rate;
-                        Qty4 = pricings[3].Qty;
-                    }
+                        if (pricings.Count > 3)
+                        {
+                            Price4 = (decimal)pricings[3].Rate;
+                            Qty4 = pricings[3].Qty;
+                        }
 
-                    if (pricings.Count > 4)
-                    {
-                        Price5 = (decimal)pricings[4].Rate;
-                        Qty5 = pricings[4].Qty;
+                        if (pricings.Count > 4)
+                        {
+                            Price5 = (decimal)pricings[4].Rate;
+                            Qty5 = pricings[4].Qty;
+                        }
+                        if (pricings.Count > 5)
+                        {
+                            Price6 = (decimal)pricings[5].Rate;
+                            Qty6 = pricings[5].Qty;
+                        }
+                        if (pricings.Count > 6)
+                        {
+                            Price7 = (decimal)pricings[6].Rate;
+                            Qty7 = pricings[6].Qty;
+                        }
+                        if (pricings.Count > 7)
+                        {
+                            Price8 = (decimal)pricings[7].Rate;
+                            Qty8 = pricings[7].Qty;
+                        }
+                        if (pricings.Count > 8)
+                        {
+                            Price9 = (decimal)pricings[8].Rate;
+                            Qty9 = pricings[8].Qty;
+                        }
+                        if (pricings.Count > 9)
+                        {
+                            Price10 = (decimal)pricings[9].Rate;
+                            Qty10 = pricings[9].Qty;
+                        }
+                        break;
                     }
-                    if (pricings.Count > 5)
-                    {
-                        Price6 = (decimal)pricings[5].Rate;
-                        Qty6 = pricings[5].Qty;
-                    }
-                    if (pricings.Count > 6)
-                    {
-                        Price7 = (decimal)pricings[6].Rate;
-                        Qty7 = pricings[6].Qty;
-                    }
-                    if (pricings.Count > 7)
-                    {
-                        Price8 = (decimal)pricings[7].Rate;
-                        Qty8 = pricings[7].Qty;
-                    }
-                    if (pricings.Count > 8)
-                    {
-                        Price9 = (decimal)pricings[8].Rate;
-                        Qty9 = pricings[8].Qty;
-                    }
-                    if (pricings.Count > 9)
-                    {
-                        Price10 = (decimal)pricings[9].Rate;
-                        Qty10 = pricings[9].Qty;
-                    }
-                    break;
-                }
                 case Globals.TYPE_DISCOUNT:
-                {
-                    if (pricings.Count > 0)
                     {
-                        Price = Math.Round(basePrice * (decimal)(1 - pricings[0].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty = pricings[0].Qty;
-                    }
+                        if (pricings.Count > 0)
+                        {
+                            Price = Math.Round(basePrice * (decimal)(1 - pricings[0].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty = pricings[0].Qty;
+                        }
 
-                    if (pricings.Count > 1)
-                    {
-                        Price2 = Math.Round(basePrice * (decimal)(1 - pricings[1].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty2 = pricings[1].Qty;
-                    }
+                        if (pricings.Count > 1)
+                        {
+                            Price2 = Math.Round(basePrice * (decimal)(1 - pricings[1].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty2 = pricings[1].Qty;
+                        }
 
-                    if (pricings.Count > 2)
-                    {
-                        Price3 = Math.Round(basePrice * (decimal)(1 - pricings[2].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty3 = pricings[2].Qty;
-                    }
+                        if (pricings.Count > 2)
+                        {
+                            Price3 = Math.Round(basePrice * (decimal)(1 - pricings[2].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty3 = pricings[2].Qty;
+                        }
 
-                    if (pricings.Count > 3)
-                    {
-                        Price4 = Math.Round(basePrice * (decimal)(1 - pricings[3].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty4 = pricings[3].Qty;
-                    }
+                        if (pricings.Count > 3)
+                        {
+                            Price4 = Math.Round(basePrice * (decimal)(1 - pricings[3].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty4 = pricings[3].Qty;
+                        }
 
-                    if (pricings.Count > 4)
-                    {
-                        Price5 = Math.Round(basePrice * (decimal)(1 - pricings[4].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty5 = pricings[4].Qty;
+                        if (pricings.Count > 4)
+                        {
+                            Price5 = Math.Round(basePrice * (decimal)(1 - pricings[4].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty5 = pricings[4].Qty;
+                        }
+                        if (pricings.Count > 5)
+                        {
+                            Price6 = Math.Round(basePrice * (decimal)(1 - pricings[5].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty6 = pricings[5].Qty;
+                        }
+                        if (pricings.Count > 6)
+                        {
+                            Price7 = Math.Round(basePrice * (decimal)(1 - pricings[6].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty7 = pricings[6].Qty;
+                        }
+                        if (pricings.Count > 7)
+                        {
+                            Price8 = Math.Round(basePrice * (decimal)(1 - pricings[7].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty8 = pricings[7].Qty;
+                        }
+                        if (pricings.Count > 8)
+                        {
+                            Price9 = Math.Round(basePrice * (decimal)(1 - pricings[8].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty9 = pricings[8].Qty;
+                        }
+                        if (pricings.Count > 9)
+                        {
+                            Price10 = Math.Round(basePrice * (decimal)(1 - pricings[9].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            Qty10 = pricings[9].Qty;
+                        }
+                        break;
                     }
-                    if (pricings.Count > 5)
-                    {
-                        Price6 = Math.Round(basePrice * (decimal)(1 - pricings[5].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty6 = pricings[5].Qty;
-                    }
-                    if (pricings.Count > 6)
-                    {
-                        Price7 = Math.Round(basePrice * (decimal)(1 - pricings[6].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty7 = pricings[6].Qty;
-                    }
-                    if (pricings.Count > 7)
-                    {
-                        Price8 = Math.Round(basePrice * (decimal)(1 - pricings[7].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty8 = pricings[7].Qty;
-                    }
-                    if (pricings.Count > 8)
-                    {
-                        Price9 = Math.Round(basePrice * (decimal)(1 - pricings[8].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty9 = pricings[8].Qty;
-                    }
-                    if (pricings.Count > 9)
-                    {
-                        Price10 = Math.Round(basePrice * (decimal)(1 - pricings[9].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                        Qty10 = pricings[9].Qty;
-                    }
-                    break;
-                }
                 default:
-                {
-                    throw new Exception("Invalid pricing type");
-                }
+                    {
+                        throw new Exception("Invalid pricing type");
+                    }
             }
         }
 
