@@ -83,10 +83,12 @@ namespace MacsimPricingCalculator
                 //List<CustomerProductPricing> customerProductPricings = new();
                 //List<CustomerProductPricingFullInformation> customerProductPricingsFullInformation = new();
 
+                List<BaseProductPrice> BasePrices = new();
+
                 foreach (var product in products)
                 {
                     // If Barcode is null, the item is discontinued
-                    if (!debug && product.BarCode == null)
+                    if (!debug && (product.BarCode == null || product.BarCode == "" || product.PCode == null || product.PCode == ""))
                     {
                         continue;
                     }
@@ -96,6 +98,10 @@ namespace MacsimPricingCalculator
                     {
                         continue;
                     }
+
+
+                    BasePrices.Add(new() { Barcode = product.BarCode, ProductCode = product.PCode, Sell = product.Sell1.ToString(), Unit = product.UOM });
+                    continue;
 
                     int x = 0;
                     Int32.TryParse(product.Group, out x);
@@ -347,10 +353,17 @@ namespace MacsimPricingCalculator
                     }
                 }
 
-                foreach (var customerProductPricing in customerProductPricings)
+                csv = "ProductCode, Barcode, Unit, Sell\n";
+
+                foreach (var BaseProductPrice in BasePrices)
                 {
-                    csv += customerProductPricing.ExportToCSVRow();
+                    csv += $"{BaseProductPrice.ProductCode}, {BaseProductPrice.Barcode}, {BaseProductPrice.Unit}, {BaseProductPrice.Sell}\n";
                 }
+
+                //foreach (var customerProductPricing in customerProductPricings)
+                //{
+                //    csv += customerProductPricing.ExportToCSVRow();
+                //}
             }
 
 
@@ -366,6 +379,13 @@ namespace MacsimPricingCalculator
 
     }
 
+    public class BaseProductPrice
+    {
+        public string ProductCode { get; set; } = "";
+        public string Barcode { get; set; } = "";
+        public string Sell { get; set; } = "";
+        public string Unit { get; set; } = "";
+    }
 
     public static class DBFunctions
     {
@@ -435,17 +455,18 @@ namespace MacsimPricingCalculator
             const int INDEX_SELL8 = 9;
             const int INDEX_BARCODE = 10;
             const int INDEX_COST = 11;
+            const int INDEX_UNIT = 12;
 
 
             string commandText;
             if (productID == null)
             {
-                commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST]
+                commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST], [UNIT]
                                      FROM [stage].[Macsim_Opmetrix_Products]";
             }
             else
             {
-                commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST]
+                commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST],  [UNIT]
                                     FROM [stage].[Macsim_Opmetrix_Products]
                                     WHERE [PCODE] = '{productID}'";
             }
@@ -475,9 +496,10 @@ namespace MacsimPricingCalculator
                 double sell7 = reader.IsDBNull(INDEX_SELL7) ? 0 : reader.GetDouble(INDEX_SELL7);
                 double sell8 = reader.IsDBNull(INDEX_SELL8) ? 0 : reader.GetDouble(INDEX_SELL8);
                 double? cost = reader.IsDBNull(INDEX_COST) ? null : reader.GetDouble(INDEX_COST);
+                string uom = reader.IsDBNull(INDEX_UNIT) ? "" : reader.GetString(INDEX_UNIT);
 
 
-                products.Add(new(pcode, group, barcode, sell1, sell2, sell3, sell4, sell5, sell6, sell7, sell8, cost));
+                products.Add(new(pcode, group, barcode, sell1, sell2, sell3, sell4, sell5, sell6, sell7, sell8, cost) { UOM = uom });
             }
             reader.Close();
             command.Dispose();
@@ -642,6 +664,7 @@ namespace MacsimPricingCalculator
         public double Sell7 { get; set; }
         public double Sell8 { get; set; }
         public double? Cost { get; set; } // Not really important but including for debug reasons
+        public string UOM { get; set; } = "";
 
         public Product(string pcode, string group, string barcode, double sell1, double sell2, double sell3, double sell4, double sell5, double sell6, double sell7, double sell8, double? cost = null)
         {
