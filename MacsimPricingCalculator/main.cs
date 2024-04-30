@@ -801,6 +801,17 @@ namespace MacsimPricingCalculator
                 throw new Exception("Too many qty breakpoints - the limit is 10");
             }
 
+            Qty = 0;
+            Qty2 = 0;
+            Qty3 = 0;
+            Qty4 = 0;
+            Qty5 = 0;
+            Qty6 = 0;
+            Qty7 = 0;
+            Qty8 = 0;
+            Qty9 = 0;
+            Qty10 = 0;
+
             switch (pricings[0].Type)
             {
                 case Globals.TYPE_OVERRIDE:
@@ -808,7 +819,7 @@ namespace MacsimPricingCalculator
                         if (pricings.Count > 0)
                         {
                             Price = (decimal)pricings[0].Rate;
-                            Qty = pricings[0].Qty;
+                            Qty = pricings[0].Qty == 0 ? 1 : pricings[0].Qty;
                         }
 
                         if (pricings.Count > 1)
@@ -866,7 +877,7 @@ namespace MacsimPricingCalculator
                         if (pricings.Count > 0)
                         {
                             Price = Math.Round(basePrice * (decimal)(1 - pricings[0].Rate / 100), Globals.SOLUTION_NUM_DECIMAL_PLACES);
-                            Qty = pricings[0].Qty;
+                            Qty = pricings[0].Qty == 0 ? 1 : pricings[0].Qty;
                         }
 
                         if (pricings.Count > 1)
