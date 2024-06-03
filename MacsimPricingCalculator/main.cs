@@ -13,6 +13,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Text;
 using System.Web.Http;
+using Newtonsoft.Json;
 
 namespace MacsimPricingCalculator
 {
@@ -20,8 +21,8 @@ namespace MacsimPricingCalculator
     public static class main
     {
         [FunctionName("MacsimPricing")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        public static async Task<IActionResult> MacsimPricing(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
             string customerID = req.Query["customerID"];
@@ -165,6 +166,61 @@ namespace MacsimPricingCalculator
                     var pricing11 = pricingCustomerSpecific.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
                     var pricing12 = pricingCustomerSpecific.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
 
+                    // Remove cloned data
+                    {
+                        if (pricing1.Count > 1 && pricing1[0].Qty == 0 && pricing1[1].Qty == 1 && pricing1[0].Rate == pricing1[1].Rate)
+                        {
+                            pricing1.RemoveAt(1);
+                        }
+                        if (pricing2.Count > 1 && pricing2[0].Qty == 0 && pricing2[1].Qty == 1 && pricing2[0].Rate == pricing2[1].Rate)
+                        {
+                            pricing2.RemoveAt(1);
+                        }
+                        if (pricing3.Count > 1 && pricing3[0].Qty == 0 && pricing3[1].Qty == 1 && pricing3[0].Rate == pricing3[1].Rate)
+                        {
+                            pricing3.RemoveAt(1);
+                        }
+                        if (pricing4.Count > 1 && pricing4[0].Qty == 0 && pricing4[1].Qty == 1 && pricing4[0].Rate == pricing4[1].Rate)
+                        {
+                            pricing4.RemoveAt(1);
+                        }
+                        if (pricing5.Count > 1 && pricing5[0].Qty == 0 && pricing5[1].Qty == 1 && pricing5[0].Rate == pricing5[1].Rate)
+                        {
+                            pricing5.RemoveAt(1);
+                        }
+                        if (pricing6.Count > 1 && pricing6[0].Qty == 0 && pricing6[1].Qty == 1 && pricing6[0].Rate == pricing6[1].Rate)
+                        {
+                            pricing6.RemoveAt(1);
+                        }
+                        if (pricing6.Count > 1 && pricing1[0].Qty == 0 && pricing1[1].Qty == 1 && pricing1[0].Rate == pricing1[1].Rate)
+                        {
+                            pricing1.RemoveAt(1);
+                        }
+                        if (pricing7.Count > 1 && pricing7[0].Qty == 0 && pricing7[1].Qty == 1 && pricing7[0].Rate == pricing7[1].Rate)
+                        {
+                            pricing7.RemoveAt(1);
+                        }
+                        if (pricing8.Count > 1 && pricing8[0].Qty == 0 && pricing8[1].Qty == 1 && pricing8[0].Rate == pricing8[1].Rate)
+                        {
+                            pricing8.RemoveAt(1);
+                        }
+                        if (pricing9.Count > 1 && pricing9[0].Qty == 0 && pricing9[1].Qty == 1 && pricing9[0].Rate == pricing9[1].Rate)
+                        {
+                            pricing9.RemoveAt(1);
+                        }
+                        if (pricing10.Count > 1 && pricing10[0].Qty == 0 && pricing10[1].Qty == 1 && pricing10[0].Rate == pricing10[1].Rate)
+                        {
+                            pricing10.RemoveAt(1);
+                        }
+                        if (pricing11.Count > 1 && pricing11[0].Qty == 0 && pricing11[1].Qty == 1 && pricing11[0].Rate == pricing11[1].Rate)
+                        {
+                            pricing11.RemoveAt(1);
+                        }
+                        if (pricing12.Count > 1 && pricing12[0].Qty == 0 && pricing12[1].Qty == 1 && pricing12[0].Rate == pricing12[1].Rate)
+                        {
+                            pricing12.RemoveAt(1);
+                        }
+                    }
 
                     if (debug)
                     {
@@ -364,7 +420,413 @@ namespace MacsimPricingCalculator
             return new FileContentResult(filebytes, "application/octet-stream") { FileDownloadName = "Output.csv" };
         }
 
+
+        [FunctionName("SPLMacsimPricing")]
+        public static async Task<IActionResult> SPLMacsimPricing(
+    [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+    ILogger log)
+        {
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            SPLMacsimPricingPostBody? body = JsonConvert.DeserializeObject<SPLMacsimPricingPostBody>(requestBody);
+            if (body == null || body.customerID == null)
+            {
+                Console.WriteLine("Missing customerID input!");
+                return new BadRequestErrorMessageResult("Missing customerID input!");
+            }
+
+            if (body.productIDs == null || body.productIDs.Length == 0)
+            {
+                Console.WriteLine("Missing productIDs array input!");
+                return new BadRequestErrorMessageResult("Missing productIDs array input!");
+            }
+
+            string customerID = body.customerID;
+            string[] productIDs = body.productIDs;
+            bool debug = !string.IsNullOrEmpty(req.Query["debug"]);
+
+            Console.WriteLine("######## Fetching Data");
+
+            Console.WriteLine("Fetching Customers");
+            var customers = DBFunctions.FetchCustomers(customerID);
+
+            if (customers.Count == 0)
+            {
+                Console.WriteLine("No Customers found");
+                return new BadRequestErrorMessageResult("No Customers found!");
+            }
+
+            Customer customer = customers[0];
+
+            //string csv = CustomerProductPricing.GenerateCSVHeader();
+            //if (debug)
+            //{
+            //    csv = CustomerProductPricingFullInformation.GenerateCSVHeader();
+            //}
+
+            Console.WriteLine("Fetching Products");
+            List<Product> products = DBFunctions.FetchProducts(productIDs);
+
+            if (products.Count != productIDs.Length)
+            {
+                Console.WriteLine("No Products found");
+                return new BadRequestErrorMessageResult("No Products found!");
+            }
+
+            Console.WriteLine("Fetching Pricing");
+            var pricingsGeneral = DBFunctions.FetchPricingGroupByProduct(productIDs, null);
+            var pricingCustomerType = DBFunctions.FetchPricingGroupByProduct(productIDs, customer.BCode);
+            var pricingCustomerSpecific = DBFunctions.FetchPricingGroupByProduct(productIDs, customer.ID);
+
+            Console.WriteLine("###### Generating Pricings");
+
+            List<CustomerProductPricingBase> customerProductPricings = new();
+
+            //List<CustomerProductPricing> customerProductPricings = new();
+            //List<CustomerProductPricingFullInformation> customerProductPricingsFullInformation = new();
+
+            foreach (var product in products)
+            {
+                // If Barcode is null, the item is discontinued
+                if (!debug && product.BarCode == null)
+                {
+                    continue;
+                }
+
+                //// If a stock category starts with ZZ, then the product is DELETED/CANCELLED - Steve Hermosilla from Macsim 2023/12/05 in email chain
+                //if (!debug && product.PCode.StartsWith("ZZ"))
+                //{
+                //    continue;
+                //}
+
+                int x = 0;
+                Int32.TryParse(product.Group, out x);
+
+                //// If Product Group is a two digit number, it is a Eclipse item and we won't be including it
+                //if (!debug && !Int32.TryParse(product.Group, out x))
+                //{
+                //    continue;
+                //}
+
+                Decimal BasePrice;
+
+                // Set base price
+                switch (customer.PBook)
+                {
+                    case "1":
+                        BasePrice = (decimal)product.Sell1;
+                        break;
+                    case "2":
+                        BasePrice = (decimal)product.Sell2;
+                        break;
+                    case "3":
+                        BasePrice = (decimal)product.Sell3;
+                        break;
+                    case "4":
+                        BasePrice = (decimal)product.Sell4;
+                        break;
+                    case "5":
+                        BasePrice = (decimal)product.Sell5;
+                        break;
+                    case "6":
+                        BasePrice = (decimal)product.Sell6;
+                        break;
+                    case "7":
+                        BasePrice = (decimal)product.Sell7;
+                        break;
+                    case "8":
+                        BasePrice = (decimal)product.Sell8;
+                        break;
+                    default:
+                        BasePrice = 0;
+                        break;
+                        //throw new Exception("Invalid PBook value");
+                }
+
+                // Any item with a base price of 0 is a discontinued item and can be ignored
+                if (!debug && BasePrice == 0)
+                {
+                    continue;
+                }
+
+                var pricing1 = pricingsGeneral.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
+                var pricing2 = pricingsGeneral.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
+
+                var pricing3 = pricingsGeneral.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
+                var pricing4 = pricingsGeneral.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
+
+
+                var pricing5 = pricingCustomerType.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
+                var pricing6 = pricingCustomerType.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
+
+                var pricing7 = pricingCustomerType.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
+                var pricing8 = pricingCustomerType.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
+
+
+                var pricing9 = pricingCustomerSpecific.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_DISCOUNT);
+                var pricing10 = pricingCustomerSpecific.FindAll(x => x.Stock == product.Group && x.Type == Globals.TYPE_OVERRIDE);
+
+                var pricing11 = pricingCustomerSpecific.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_DISCOUNT);
+                var pricing12 = pricingCustomerSpecific.FindAll(x => x.Stock == product.PCode && x.Type == Globals.TYPE_OVERRIDE);
+
+                // Remove cloned data
+                {
+                    if (pricing1.Count > 1 && pricing1[0].Qty == 0 && pricing1[1].Qty == 1 && pricing1[0].Rate == pricing1[1].Rate)
+                    {
+                        pricing1.RemoveAt(1);
+                    }
+                    if (pricing2.Count > 1 && pricing2[0].Qty == 0 && pricing2[1].Qty == 1 && pricing2[0].Rate == pricing2[1].Rate)
+                    {
+                        pricing2.RemoveAt(1);
+                    }
+                    if (pricing3.Count > 1 && pricing3[0].Qty == 0 && pricing3[1].Qty == 1 && pricing3[0].Rate == pricing3[1].Rate)
+                    {
+                        pricing3.RemoveAt(1);
+                    }
+                    if (pricing4.Count > 1 && pricing4[0].Qty == 0 && pricing4[1].Qty == 1 && pricing4[0].Rate == pricing4[1].Rate)
+                    {
+                        pricing4.RemoveAt(1);
+                    }
+                    if (pricing5.Count > 1 && pricing5[0].Qty == 0 && pricing5[1].Qty == 1 && pricing5[0].Rate == pricing5[1].Rate)
+                    {
+                        pricing5.RemoveAt(1);
+                    }
+                    if (pricing6.Count > 1 && pricing6[0].Qty == 0 && pricing6[1].Qty == 1 && pricing6[0].Rate == pricing6[1].Rate)
+                    {
+                        pricing6.RemoveAt(1);
+                    }
+                    if (pricing6.Count > 1 && pricing1[0].Qty == 0 && pricing1[1].Qty == 1 && pricing1[0].Rate == pricing1[1].Rate)
+                    {
+                        pricing1.RemoveAt(1);
+                    }
+                    if (pricing7.Count > 1 && pricing7[0].Qty == 0 && pricing7[1].Qty == 1 && pricing7[0].Rate == pricing7[1].Rate)
+                    {
+                        pricing7.RemoveAt(1);
+                    }
+                    if (pricing8.Count > 1 && pricing8[0].Qty == 0 && pricing8[1].Qty == 1 && pricing8[0].Rate == pricing8[1].Rate)
+                    {
+                        pricing8.RemoveAt(1);
+                    }
+                    if (pricing9.Count > 1 && pricing9[0].Qty == 0 && pricing9[1].Qty == 1 && pricing9[0].Rate == pricing9[1].Rate)
+                    {
+                        pricing9.RemoveAt(1);
+                    }
+                    if (pricing10.Count > 1 && pricing10[0].Qty == 0 && pricing10[1].Qty == 1 && pricing10[0].Rate == pricing10[1].Rate)
+                    {
+                        pricing10.RemoveAt(1);
+                    }
+                    if (pricing11.Count > 1 && pricing11[0].Qty == 0 && pricing11[1].Qty == 1 && pricing11[0].Rate == pricing11[1].Rate)
+                    {
+                        pricing11.RemoveAt(1);
+                    }
+                    if (pricing12.Count > 1 && pricing12[0].Qty == 0 && pricing12[1].Qty == 1 && pricing12[0].Rate == pricing12[1].Rate)
+                    {
+                        pricing12.RemoveAt(1);
+                    }
+                }
+
+                if (debug)
+                {
+                    CustomerProductPricingFullInformation customerProductPricingFullInformation =
+new CustomerProductPricingFullInformation(customer.ID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, product);
+
+                    customerProductPricingFullInformation.PriceBase = BasePrice;
+                    // Set all other prices
+
+                    // Set all Price Overrides (type = 1)
+                    {
+                        if (pricing2?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price2 = Math.Round((decimal)pricing2[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks2 = pricing2.Count;
+                        }
+
+                        if (pricing4?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price4 = Math.Round((decimal)pricing4[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks4 = pricing4.Count;
+                        }
+
+                        if (pricing6?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price6 = Math.Round((decimal)pricing6[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks6 = pricing6.Count;
+                        }
+
+                        if (pricing8?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price8 = Math.Round((decimal)pricing8[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks8 = pricing8.Count;
+                        }
+
+                        if (pricing10?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price10 = Math.Round((decimal)pricing10[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks10 = pricing10.Count;
+                        }
+
+                        if (pricing12?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price12 = Math.Round((decimal)pricing12[0].Rate, Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks12 = pricing12.Count;
+                        }
+                    }
+
+                    // Set all discounts (type = 2)
+                    {
+                        if (pricing1?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price1 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing1[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks1 = pricing1.Count;
+                        }
+
+                        if (pricing3?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price3 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing3[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks3 = pricing3.Count;
+                        }
+
+                        if (pricing5?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price5 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing5[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks5 = pricing5.Count;
+                        }
+
+                        if (pricing7?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price7 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing7[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks7 = pricing7.Count;
+                        }
+
+                        if (pricing9?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price9 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing9[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks9 = pricing9.Count;
+                        }
+
+                        if (pricing11?.Count > 0)
+                        {
+                            customerProductPricingFullInformation.Price11 = Math.Round((decimal)(customerProductPricingFullInformation.PriceBase * (decimal?)(1 - pricing11[0].Rate / 100)), Globals.SOLUTION_NUM_DECIMAL_PLACES);
+                            customerProductPricingFullInformation.QtyBreaks11 = pricing11.Count;
+                        }
+                    }
+
+                    // If there is no special customer pricing
+                    if (customerProductPricingFullInformation.Price1 == null && customerProductPricingFullInformation.Price2 == null && customerProductPricingFullInformation.Price3 == null && customerProductPricingFullInformation.Price4 == null
+                        && customerProductPricingFullInformation.Price5 == null && customerProductPricingFullInformation.Price6 == null && customerProductPricingFullInformation.Price7 == null && customerProductPricingFullInformation.Price8 == null
+                        && customerProductPricingFullInformation.Price9 == null && customerProductPricingFullInformation.Price10 == null && customerProductPricingFullInformation.Price11 == null && customerProductPricingFullInformation.Price12 == null)
+                    {
+                        continue;
+                    }
+
+                    customerProductPricings.Add(customerProductPricingFullInformation);
+                    continue;
+                }
+
+                // Calcaulte all pricings
+
+                // Otherwise filter to just the highest priority customer price
+                // Check from pricing 12 all the way down
+
+                // Jeremy 2023/11/16 After the price files were reviewed, it seems that pricing 8 should override both pricing 9 and pricing 12. I have placed pricing 8 as the highest priority for now. Will try to get clarification on the pricing priority order.
+
+                {
+
+                    if (pricing12.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing12, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing11.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing11, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing10.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing10, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing9.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing9, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing8.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing8, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing7.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing7, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing6.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing6, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing5.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing5, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing4.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing4, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing3.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing3, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing2.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing2, BasePrice));
+                        continue;
+                    }
+
+                    if (pricing1.Count > 0)
+                    {
+                        customerProductPricings.Add(new CustomerProductPricing(customerID, customer.BCode, customer.PBook, product.PCode, product.Group, product.BarCode, pricing1, BasePrice));
+                        continue;
+                    }
+                }
+            }
+
+            //foreach (var customerProductPricing in customerProductPricings)
+            //{
+            //    csv += customerProductPricing.ExportToCSVRow();
+            //}
+
+
+
+            //File.WriteAllText("../../../output.csv", csv);
+            Console.WriteLine("Finished Generating Pricing Data");
+
+            
+            //return new BadRequestResult();
+            return new JsonResult(new { data = customerProductPricings });
+
+            //byte[] filebytes = Encoding.UTF8.GetBytes(csv);
+            //return new FileContentResult(filebytes, "application/octet-stream") { FileDownloadName = "Output.csv" };
+        }
+
+
     }
+
 
 
     public static class DBFunctions
@@ -485,6 +947,76 @@ namespace MacsimPricingCalculator
             return products;
         }
 
+        public static List<Product> FetchProducts(string[] productIDs)
+        {
+            string dbConnectionString = Globals.DB_CONNECTION_STRING;
+            List<Product> products = new();
+
+            const int INDEX_PCODE = 0;
+            const int INDEX_GROUP = 1;
+            const int INDEX_SELL1 = 2;
+            const int INDEX_SELL2 = 3;
+            const int INDEX_SELL3 = 4;
+            const int INDEX_SELL4 = 5;
+            const int INDEX_SELL5 = 6;
+            const int INDEX_SELL6 = 7;
+            const int INDEX_SELL7 = 8;
+            const int INDEX_SELL8 = 9;
+            const int INDEX_BARCODE = 10;
+            const int INDEX_COST = 11;
+
+            if (productIDs.Length == 0)
+            {
+                return products;
+            }
+
+            string list = $"('{productIDs[0]}'";
+            for (int i = 1; i < productIDs.Length; i++)
+            {
+                list += $",'{productIDs[i]}'";
+            }
+            list += ")";
+
+            string commandText = $@"SELECT [PCODE], [GROUP], [SELL1], [SELL2], [SELL3], [SELL4], [SELL5], [SELL6], [SELL7], [SELL8], [BARCODE], [COST]
+                                    FROM [stage].[Macsim_Opmetrix_Products]
+                                    WHERE [PCODE] in {list}";
+
+            SqlConnection connection = new(dbConnectionString);
+            connection.Open();
+            SqlCommand command = connection.CreateCommand();
+            command.CommandType = CommandType.Text;
+            command.CommandText = commandText;
+            command.CommandTimeout = 0;
+            SqlDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                if (reader.IsDBNull(INDEX_PCODE)) { continue; }
+                if (reader.IsDBNull(INDEX_GROUP)) { continue; }
+
+                string pcode = reader.GetString(INDEX_PCODE);
+                string group = reader.GetString(INDEX_GROUP);
+                string barcode = reader.IsDBNull(INDEX_BARCODE) ? "" : reader.GetString(INDEX_BARCODE);
+                double sell1 = reader.IsDBNull(INDEX_SELL1) ? 0 : reader.GetDouble(INDEX_SELL1);
+                double sell2 = reader.IsDBNull(INDEX_SELL2) ? 0 : reader.GetDouble(INDEX_SELL2);
+                double sell3 = reader.IsDBNull(INDEX_SELL3) ? 0 : reader.GetDouble(INDEX_SELL3);
+                double sell4 = reader.IsDBNull(INDEX_SELL4) ? 0 : reader.GetDouble(INDEX_SELL4);
+                double sell5 = reader.IsDBNull(INDEX_SELL5) ? 0 : reader.GetDouble(INDEX_SELL5);
+                double sell6 = reader.IsDBNull(INDEX_SELL6) ? 0 : reader.GetDouble(INDEX_SELL6);
+                double sell7 = reader.IsDBNull(INDEX_SELL7) ? 0 : reader.GetDouble(INDEX_SELL7);
+                double sell8 = reader.IsDBNull(INDEX_SELL8) ? 0 : reader.GetDouble(INDEX_SELL8);
+                double? cost = reader.IsDBNull(INDEX_COST) ? null : reader.GetDouble(INDEX_COST);
+
+
+                products.Add(new(pcode, group, barcode, sell1, sell2, sell3, sell4, sell5, sell6, sell7, sell8, cost));
+            }
+            reader.Close();
+            command.Dispose();
+            connection.Close();
+            return products;
+        }
+
+
         public static Pricing? FetchPricing(string stock, string type, string? account)
         {
             string dbConnectionString = Globals.DB_CONNECTION_STRING;
@@ -597,6 +1129,76 @@ namespace MacsimPricingCalculator
 
             return pricings;
         }
+
+        public static List<Pricing> FetchPricingGroupByProduct(string[] productIDs, string? account)
+        {
+            string dbConnectionString = Globals.DB_CONNECTION_STRING;
+            List<Pricing> pricings = new();
+
+            const int INDEX_STOCK = 0;
+            const int INDEX_ACCOUNT = 1;
+            const int INDEX_RATE = 2;
+            const int INDEX_TYPE = 3;
+            const int INDEX_QTY = 4;
+
+            if (productIDs.Length == 0)
+            {
+                return pricings;
+            }
+
+            string list = $"('{productIDs[0]}'";
+            for (int i = 1; i < productIDs.Length; i++)
+            {
+                list += $",'{productIDs[i]}'";
+            }
+            list += ")";
+
+            string commandText;
+
+            if (account == null)
+            {
+                commandText = $@"SELECT [stock], [account], [rate], [type], [quantity]
+                                    FROM [stage].[Macsim_Opmetrix_ContractPricing]
+                                    WHERE [stock] in {list} AND [account] IS null";
+            }
+            else
+            {
+                commandText = $@"SELECT [stock], [account], [rate], [type], [quantity]
+                                    FROM [stage].[Macsim_Opmetrix_ContractPricing]
+                                    WHERE [stock] in {list} AND [account] = '{account}'";
+            }
+
+            SqlConnection connection = new(dbConnectionString);
+            connection.Open();
+            SqlCommand command = connection.CreateCommand();
+            command.CommandType = CommandType.Text;
+            command.CommandText = commandText;
+            command.CommandTimeout = 0;
+            SqlDataReader reader = command.ExecuteReader();
+
+
+            // Should be either 1 or 0 pricing rows
+            while (reader.Read())
+            {
+                if (reader.IsDBNull(INDEX_STOCK)) { continue; }
+                if (reader.IsDBNull(INDEX_RATE)) { continue; }
+                if (reader.IsDBNull(INDEX_TYPE)) { continue; }
+
+                string _stock = reader.GetString(INDEX_STOCK);
+                string? _account = reader.IsDBNull(INDEX_ACCOUNT) ? null : reader.GetString(INDEX_ACCOUNT);
+                double rate = reader.GetDouble(INDEX_RATE);
+                int _type = reader.GetInt32(INDEX_TYPE);
+                int qty = reader.IsDBNull(INDEX_QTY) ? 0 : (int)reader.GetDouble(INDEX_QTY);
+
+                pricings.Add(new(_stock, rate, _type, qty, _account));
+            }
+            reader.Close();
+            command.Dispose();
+            connection.Close();
+
+            return pricings;
+        }
+
     }
 
 
@@ -612,6 +1214,13 @@ namespace MacsimPricingCalculator
             Console.SetError(streamwriter);
         }
     }
+
+    public class SPLMacsimPricingPostBody
+    {
+        public string? customerID { get; set; }
+        public string[]? productIDs { get; set; }
+    }
+
 
 
     public class Customer
